@@ -29,8 +29,6 @@ creating folders (From the home file of repo):
 
 
 
-Keeping "toy = True" in main.py should run through regression and test code.
-Setting it False will run the true regressuion and take a long time, and very high memory for embeddings.
-
-Running the full version myself right now, but issues on Sherlock.
+Keeping "toy = True" in main.py should run through training the classifier and test code on toy data sets (provided).
+Setting it False will run the true classifier and take a long time, and very high memory for embeddings.
 
