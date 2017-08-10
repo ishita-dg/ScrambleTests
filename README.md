@@ -3,7 +3,7 @@ Codebase to
 1. Train classifiers on pairs of InferSent embedded sentences to predict NLI labels
 2. Test its performance on a new Scrambled dataset
 
-##Instructions##
+## Instructions ##
 Downloads:
 1. SNLI database to Downloads/SNLI/true
 
