@@ -81,25 +81,25 @@ def allClassifiersExist(name):
 
 # Train regressions
 for name in names:
-    if (toy or (not allClassifiersExist(name))):
+    if (not allClassifiersExist(name)):
         embeddings = rF.create_embed(model, snli_data, batch_size, name, EMBED_STORE)
     for classifier in classifiers:
-        if (toy or (not os.path.exists(REGR_MODEL_PATH + name + classifier))):
+        if (not os.path.exists(REGR_MODEL_PATH + name + classifier)):
             rF.trainreg(embeddings, snli_data, classifier, name, outpaths)
 
 
-# # Test 
-# # Scrambletest tasks
-# tasks = ['adjr', 'comp', 'ncon', 'subjv', 'temp', 'verb']
-# if toy:
-#     outpaths['TEST_DATA_PATH'] = './testData/toy/'
-# else:
-#     outpaths['TEST_DATA_PATH'] = './testData/true/'
+# Test 
+# Scrambletest tasks
+tasks = ['adjr', 'comp', 'ncon', 'subjv', 'temp', 'verb']
+if toy:
+    outpaths['TEST_DATA_PATH'] = './testData/toy/'
+else:
+    outpaths['TEST_DATA_PATH'] = './testData/true/'
 
 
-# for name in names:
-#     for classifier in classifiers:
-#         tF.runtests(name, classifier, model, tasks, outpaths)
+for name in names:
+    for classifier in classifiers:
+        tF.runtests(name, classifier, model, tasks, outpaths)
 
 
 # Retest the trained regressions
