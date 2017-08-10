@@ -7,6 +7,8 @@ Codebase to
 Downloads:
 1. SNLI database to Downloads/SNLI/true
 
+https://nlp.stanford.edu/projects/snli/snli_1.0.zip
+
 toy SNLI provided, download the rest
 
 `DATA_PATH = './Downloads/SNLI/toy/'`
@@ -17,9 +19,13 @@ OR
 
 2. glove file to Downloads/
 
+http://nlp.stanford.edu/data/glove.840B.300d.zip
+
 `GLOVE_PATH = './Downloads/glove.840B.300d.txt'`
 
 3. Infersent pickled model to Downloads/
+
+`curl -Lo encoder/infersent.allnli.pickle https://s3.amazonaws.com/senteval/infersent/infersent.allnli.pickle`
 
 `MODEL_PATH = './Downloads/infersent.allnli.pickle'`
 
