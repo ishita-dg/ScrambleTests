@@ -3,18 +3,17 @@ Codebase to
 1. Train classifiers on pairs of InferSent embedded sentences to predict NLI labels
 2. Test its performance on a new Scrambled dataset
 
-##Instructions
+##Instructions##
 Downloads:
 1. SNLI database to Downloads/SNLI/true
 
 toy SNLI provided, download the rest
-`if toy:
 
-    DATA_PATH = './Downloads/SNLI/toy/'
-    
-else:
+`DATA_PATH = './Downloads/SNLI/toy/'`
 
-    DATA_PATH = './Downloads/SNLI/true/'`
+OR
+
+`DATA_PATH = './Downloads/SNLI/true/'`
 
 2. glove file to Downloads/
 
