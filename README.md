@@ -8,18 +8,18 @@ Downloads:
 1. SNLI database to Downloads/SNLI/true
 
 toy SNLI provided, download the rest
-code(if toy:
+`code(if toy:
     DATA_PATH = './Downloads/SNLI/toy/'
 else:
-    DATA_PATH = './Downloads/SNLI/true/')
+    DATA_PATH = './Downloads/SNLI/true/')`
 
 2. glove file to Downloads/
 
-code(GLOVE_PATH = './Downloads/glove.840B.300d.txt')
+`code(GLOVE_PATH = './Downloads/glove.840B.300d.txt')`
 
 3. Infersent pickled model to Downloads/
 
-code(MODEL_PATH = './Downloads/infersent.allnli.pickle')
+`code(MODEL_PATH = './Downloads/infersent.allnli.pickle')`
 
 creating folders (From the home file of repo):
 1. ./models/
