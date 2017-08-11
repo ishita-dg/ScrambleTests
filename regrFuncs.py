@@ -8,7 +8,7 @@ import torch
 import pickle
 import classifier as cl
 import os
-from sklearn.linear_model import LogisticRegression
+# from sklearn.linear_model import LogisticRegression
 
 def embed(model, batch, batch_size, name):
     if (name == 'BOW'):
