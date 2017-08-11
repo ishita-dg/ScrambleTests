@@ -68,7 +68,15 @@ batch_size = 64
 
 snli_data = lD.loadSNLI(DATA_PATH, label2id)
 
+# Load scramble data in same format as snli (suitable for training)
+scramble_data_path = './testData/toy/' if toy else './testData/true/'
+scramble_data = lD.load_scramble_all(scramble_data_path, label2id)
 
+# Create combined dataset of SNLI + scramble data
+combined_data = lD.sort_group(lD.merge_groups([scramble_data, snli_data]))
+
+# Select which data to train on:
+training_data = snli_data # combined_data, scramble_data
 
 names = ['InferSent','BOW']
 classifiers = ['LogReg', 'MLP']
@@ -82,10 +90,10 @@ def allClassifiersExist(name):
 # Train regressions
 for name in names:
     if (not allClassifiersExist(name)):
-        embeddings = rF.create_embed(model, snli_data, batch_size, name, EMBED_STORE)
+        embeddings = rF.create_embed(model, training_data, batch_size, name, EMBED_STORE)
     for classifier in classifiers:
         if (not os.path.exists(REGR_MODEL_PATH + name + classifier)):
-            rF.trainreg(embeddings, snli_data, classifier, name, outpaths)
+            rF.trainreg(embeddings, training_data, classifier, name, outpaths)
 
 
 # Test 
