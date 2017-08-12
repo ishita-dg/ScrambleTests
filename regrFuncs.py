@@ -169,7 +169,8 @@ def trainreg (embed, data, classifier, name, outpaths):
     
     
     config_classifier = {'nclasses':3, 'seed':1111, 'usepytorch':True,
-                         'classifier': classifier, 'nhid': 512}
+                         'classifier': classifier, 'nhid': 512,
+                         'cudaEfficient': False}
     
     clf = SplitClassifier(X={'train':trainF, 'valid':devF, 'test':testF},
                           y={'train':trainY, 'valid':devY, 'test':testY},

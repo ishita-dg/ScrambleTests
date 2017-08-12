@@ -95,7 +95,7 @@ def allClassifiersExist(name, classifiers):
         flag *= os.path.exists(REGR_MODEL_PATH + name + classifier)
     return flag
 
-def runAlltests(names, classifiers, model, tasks, outpaths, label2id = None):
+def runAllTests(names, classifiers, model, tasks, outpaths, label2id = None):
     for name in names:
         for classifier in classifiers:
             tF.runtests(name, classifier, model, tasks, outpaths, label2id)
@@ -125,7 +125,7 @@ if toy:
 else:
     outpaths['TEST_DATA_PATH'] = './testData/true/'
 
-runTests(names, classifiers, model, tasks, outpaths)
+runAllTests(names, classifiers, model, tasks, outpaths, label2id)
 
 # # Retest the trained regressions
 # tasks = ['test', 'dev']

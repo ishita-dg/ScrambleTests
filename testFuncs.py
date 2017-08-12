@@ -18,7 +18,7 @@ def predict(v1, v2, reg):
     return label, probs.tolist()
 
 
-def runtests(name, classifier, model, tasks, outpaths, label2id = None):
+def runtests(name, classifier, model, tasks, outpaths, label2id):
     modelname = name + classifier
     print('\n\n'+'**'*40)
     print("\nRunning tests for {0}...\n".format(modelname))
