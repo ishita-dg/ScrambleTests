@@ -21,3 +21,4 @@ So you can run the analysis script directly.
 In `AnalyseTests.ipynb`, setting `Scram = True` runs tests for Scramble test data, `Scram = False` runs it for te SNLI test and/or dev sets.
 Produces the plots (inline as well as in ./figures/), and displays high-margin BOW misclassifications (inline).
 
+NOTE: currently only compatible with pytorch, not pytorch2.
