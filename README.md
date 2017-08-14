@@ -14,3 +14,9 @@ This should run through training the classifier and test code on toy data sets (
 
 Setting it False will run the true classifier and take a long time, and very high memory for embeddings.
 
+### Analysing tests ###
+The logistic regression models (in ./models/) as well as their outputs on the true scramble-test results (in ./regout/) are provided.
+So you can run the tests directly.
+
+Running AnalyseTests.ipynb will produce the plots (inline as well as in ./figures/), as well as display high-margin BOW misclassifications (inline).
+In AnalyseTest, setting `Scram = True` runs tests for Scramble test data, `Scram = False` runs it for te SNLI test and/or dev sets.
