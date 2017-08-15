@@ -1,4 +1,5 @@
-#!/usr/bin/env sed -f
+#!/bin/sh
+exec sed "$(cat <<'EOF')" -- "$@"
 
 # Sed script to produce Penn Treebank tokenization on arbitrary raw text.
 # Yeah, sure.
@@ -80,3 +81,4 @@ s= \([Ww]\)anna = \1an na =g
 # clean out extra spaces
 s=  *= =g
 s=^ *==g
+EOF
