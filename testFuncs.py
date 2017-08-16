@@ -38,7 +38,6 @@ def runtests(name, classifier, model, tasks, outpaths, label2id):
                 true = [label2id[x.strip().upper()] for x in true]
 
         
-        print(X_A)
         embedA = rF.embed(model, X_A, 1, name)
         embedB = rF.embed(model, X_B, 1, name)
         
