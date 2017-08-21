@@ -67,6 +67,7 @@ else:
     model.build_vocab_k_words(K=100000)
 
 batch_size = 64
+useCudaReg = False
 
 # ***************************************************************************
 # Loading training data
@@ -109,10 +110,12 @@ classifiers = ['LogReg', 'MLP']
 
 for name in names:
     if (not allClassifiersExist(name, classifiers)):
-        embeddings = rF.create_embed(model, training_data, batch_size, name, EMBED_STORE)
+        embeddings = rF.create_embed(model, training_data, 
+            batch_size, name, EMBED_STORE)
     for classifier in classifiers:
         if (not os.path.exists(REGR_MODEL_PATH + name + classifier)):
-            rF.trainreg(embeddings, training_data, classifier, name, outpaths)
+            rF.trainreg(embeddings, training_data, 
+                classifier, name, outpaths, useCudaReg)
 
 
 # ***************************************************************************

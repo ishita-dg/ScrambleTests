@@ -36,9 +36,8 @@ def create_embed(model, data, batch_size, name, EMBED_STORE = None):
     print('\nStart embedding for {0}\n'.format(name))
     snli_embed = {'train':{}, 'dev':{}, 'test':{}} 
     for key in snli_embed:
-        period = round(len(data[key]['y'])/10)
         print('Computing embedding for {0}'.format(key))
-        fac = int(len(data[key]['y'])/(batch_size))
+        fac = int(len(data[key]['y'])*1.0/(10.0*batch_size))
         for txt_type in ['X_A', 'X_B']:
             if (EMBED_STORE is not None):
                 fname = EMBED_STORE + name + key + txt_type
@@ -154,7 +153,7 @@ class SplitClassifier(object):
 def featurize(v1, v2):
     return np.c_[v1, v2, np.abs(v1 - v2), v1*v2]
 
-def trainreg (embed, data, classifier, name, outpaths):
+def trainreg (embed, data, classifier, name, outpaths, useCudaReg):
     # Train
     trainF = featurize(embed['train']['X_A'], embed['train']['X_B'])
     trainY = np.array(data['train']['y'])
@@ -170,7 +169,7 @@ def trainreg (embed, data, classifier, name, outpaths):
     
     config_classifier = {'nclasses':3, 'seed':1111, 'usepytorch':True,
                          'classifier': classifier, 'nhid': 512,
-                         'cudaEfficient': False}
+                         'cudaEfficient': useCudaReg}
     
     clf = SplitClassifier(X={'train':trainF, 'valid':devF, 'test':testF},
                           y={'train':trainY, 'valid':devY, 'test':testY},

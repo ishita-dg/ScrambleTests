@@ -7,12 +7,16 @@ Codebase to
 ### Getting data ###
 In the Downloads folder, run:
 `./get_data.bash`
+Requires `7za` to unzip downloaded files, download and install from https://sourceforge.net/projects/p7zip/files/p7zip/
 
 ### Run-through with toy ###
 Run: `python main.py`, with `toy = True`.
 This should run through training the classifier and test code on toy data sets (provided).
 
 Setting it False will run the true classifier and take a long time, and very high memory (~150+ GB) for InferSent embeddings.
+
+### GPU for classifier training ###
+Set `useCudaReg = True` in `main.py`
 
 ### Analysing tests ###
 The logistic regression models (in ./models/) as well as their outputs on the true scramble-test results (in ./regout/) are provided.
