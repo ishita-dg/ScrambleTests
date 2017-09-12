@@ -121,11 +121,10 @@ def load_scramble_task(path, label2id, task):
     return scramble_group
 
 
-def load_scramble_all(path, label2id):
+def load_scramble_all(path, label2id, tasks):
     """
     Load all scramble data groups merged together as a single group, sorted to reduce padding.
     """
-    tasks = ['adjr', 'comp', 'ncon', 'subjv', 'temp', 'verb']
     groups = []
     for task in tasks:
         groups.append(load_scramble_task(path, label2id, task))

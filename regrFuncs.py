@@ -37,7 +37,7 @@ def create_embed(model, data, batch_size, name, EMBED_STORE = None):
     snli_embed = {'train':{}, 'dev':{}, 'test':{}} 
     for key in snli_embed:
         print('Computing embedding for {0}'.format(key))
-        fac = int(len(data[key]['y'])*1.0/(10.0*batch_size))
+        fac = max(1.0, int(len(data[key]['y'])*1.0/(10.0*batch_size)))
         for txt_type in ['X_A', 'X_B']:
             if (EMBED_STORE is not None):
                 fname = EMBED_STORE + name + key + txt_type

@@ -44,11 +44,12 @@ if toy:
     REGR_MODEL_PATH = REGR_MODEL_PATH + 'TOY'
     EMBED_STORE = None
     TEST_OUT_PATH = TEST_OUT_PATH + 'TOY'
+    TEST_DATA_PATH = './testData/toy/'
 else:
     DATA_PATH = './Downloads/SNLI/true/'
+    TEST_DATA_PATH = './testData/true/'
 
-outpaths = {'REGR_MODEL_PATH': REGR_MODEL_PATH, 'TEST_OUT_PATH': TEST_OUT_PATH}
-
+outpaths = {'REGR_MODEL_PATH': REGR_MODEL_PATH, 'TEST_OUT_PATH': TEST_OUT_PATH, 'TEST_DATA_PATH' : TEST_DATA_PATH}
 
 id2label = {0:'CONTRADICTION', 1:'NEUTRAL', 2:'ENTAILMENT'}
 label2id = {'CONTRADICTION': 0, 'NEUTRAL':1, 'ENTAILMENT':2}
@@ -76,9 +77,13 @@ useCudaReg = False
 
 snli_data = lD.loadSNLI(DATA_PATH, label2id)
 
+#tasks = ['adjr', 'comp', 'ncon', 'subjv', 'temp', 'verb']
+tasks = [f[7:] for f in os.listdir(outpaths['TEST_DATA_PATH']) if 'label' in f]
+
+
 # Load scramble data in same format as snli (suitable for training)
 scramble_data_path = './testData/toy/' if toy else './testData/true/'
-scramble_data = lD.load_scramble_all(scramble_data_path, label2id)
+scramble_data = lD.load_scramble_all(scramble_data_path, label2id, tasks)
 
 # Create combined dataset of SNLI + scramble data
 combined_data = lD.sort_group(lD.merge_groups([scramble_data, snli_data]))
@@ -122,16 +127,13 @@ for name in names:
 # Testing classifiers on Scramble dataset
 # ***************************************************************************
 
-tasks = ['adjr', 'comp', 'ncon', 'subjv', 'temp', 'verb']
-if toy:
-    outpaths['TEST_DATA_PATH'] = './testData/toy/'
-else:
-    outpaths['TEST_DATA_PATH'] = './testData/true/'
+#print("Running tests for tasks: ", tasks)
 
+#runAllTests(names, classifiers, model, tasks, outpaths, label2id)
+
+# Retest the trained regressions
+tasks = ['test', 'dev']
+outpaths['TEST_DATA_PATH'] = DATA_PATH
+print("Running tests for tasks: ", tasks)
 runAllTests(names, classifiers, model, tasks, outpaths, label2id)
-
-# # Retest the trained regressions
-# tasks = ['test', 'dev']
-# outpaths['TEST_DATA_PATH'] = DATA_PATH
-# runAlltests(names, classifiers, model, tasks, outpaths, label2id)
 

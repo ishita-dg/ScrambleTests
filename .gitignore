@@ -1,7 +1,10 @@
 *pickle*
 glove*
-TOY*
+*TOY*
 .DS*
 *checkpoint*
 *_pycache_*
 Downloads/SNLI/true/*
+models/*MLP
+*_old*
+*.pyc
