@@ -8,6 +8,7 @@ Codebase to
 In the Downloads folder, run:
 `./get_data.bash`
 Requires `7za` to unzip downloaded files, download and install from https://sourceforge.net/projects/p7zip/files/p7zip/
+Path to sed tokenizer might need to be adjusted.
 
 ### Run-through with toy ###
 Run: `python main.py`, with `toy = True`.
