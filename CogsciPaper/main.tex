@@ -55,7 +55,23 @@ Sentence embeddings; compositionality; test data sets
 \end{abstract}
 
 
-\section{Introduction}
+\section{Introduction and Motivation}
+In the world of deep learning, statistical structure is extracted by training on very large datasets. Several of these models are in theory Turing complete, leaving the discovery of the right parameters mostly to the training data and partially also to the training protocols. The training datasets are assumed to be samples from the natural distribution. While it remains an interesting question as to whether these training data sets truly are sampling the true distribution we want to approximate, another question is of how many random samples from the true distribution are enough to sufficiently constrain the space of models (in the huge space of possibilities the thousands of parameters in a neural network model allow) that explain the training data. Heuristics literature shows that simple strategies often satisfactorily explain the bulk of the variance amongst the most likely scenarios.
+
+\textbf{discussion on heuristics literature}
+
+Perhaps a better strategy for generating training data is to sample the cases that are most informative about the validity of competing models, especially to help rule out simple heuristics. This necessitates the disproportionate representation of `edge cases' that do not have high probability of occurrence in the wild i.e. when sampling from the natural distribution. The creation of such "teaching" data sets better constrain the set of the possible models, instead of blindly sampling from the distribution posited by the true model.
+
+\textbf{discussion on ``teaching data sets"}
+
+It is not a new proposal that one should focus on the boundaries when trying to learn structures, this has parallels to research on adversarial training. However, in the realms of very structured compositional domains like language, perhaps it is unrealistic to generate good adversarial examples that are valid. Enter the field of cognitive psychology and psycholinguistics where people have been coming up with good edge cases to test human understanding of these domains for decades. 
+
+\textbf{discussion on what cogsci can offer / why adversarial training as it stands isn't there yet}
+
+The disproportionate sampling of tails of the true distribution, and the contrived cases that live there, is unlikely to occur in a natural environment. Perhaps kids are given some extra exposure to common pitfalls etc and what to avoid during schooling and other pedagogy, but it is disheartening to believe that structures cannot be learned from passive observation of natural statistics. However, generative learners are less sensitive to variations in the distributions of observed data and make better use of implicit negative evidence. So perhaps this kind of hand-holding is not necessary for more generative models.
+
+
+\section{Sentence Encoding}
 
 Understanding language requires the understanding not just of the words, but of their relation and ordering in a sentence. Models of word semantics where words are embedded in a vector space have been successful in capturing the meanings of words. However, due to the combinatorial productivity of language, the number of possible sentences far exceeds the size of the vocabulary, and generating similar vector embeddings for sentences has proved challenging. Recent literature reports several supervised as well as unsupervised approaches to learning sentence representations using Recurrent Neural Networks that account for word ordering \citep{Kiros:2015uq, Hill:2016uu, Conneau:2017uf}. 
 % Consider commenting on neural Turing machine type thing - i.e. nn with memory?
