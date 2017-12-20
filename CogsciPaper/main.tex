@@ -19,6 +19,7 @@
 \def\bibfont{\footnotesize}
 
 
+
 \usepackage{color}
 \definecolor{Green}{RGB}{10,200,100}
 \newcommand{\ndg}[1]{\textcolor{Green}{[ndg: #1]}}  
@@ -32,15 +33,13 @@
 \futurelet\reserved@a\@xhline}
 \makeatother
 
-% TODO: Create classes of tests based on length of subject/distance across swaps, and ensure that pairs are of two kinds. Check statistical validity of success in InferSent.
-% TODO: Devise a permutation test – does InferSent just detect the reshuffling and assign perturbed label? Or are the perturbations dependable? Not sure if reasonable to draw inferences from InferSent on gibberish permutations... Maybe just check if vector between original and shuffled can be distinguished in cases where the shuffle takes you to different other classes. 
-
 \title{Gauging Compositionality in Sentence Embeddings}
  
-\author{\textbf{Ishita Dasgupta$^1,$ Andreas Stuhlm\"uller$^2,$ Samuel J. Gershman$^3$ \& Noah D. Goodman$^2$}\medskip\\ 
+\author{\textbf{Ishita Dasgupta$^1,$  Demi Guo$^4,$ Andreas Stuhlm\"uller$^2,$ Samuel J. Gershman$^3$ \& Noah D. Goodman$^2$}\medskip\\ 
 $^1$Department of Physics and Center for Brain Science, Harvard University\\
 $^2$Department of Psychology, Stanford University\\
-$^3$Department of Psychology and Center for Brain Science, Harvard University
+$^3$Department of Psychology and Center for Brain Science, Harvard University\\
+$^4$Department of Computer Science, Harvard University
 }
 
 
@@ -50,8 +49,7 @@ $^3$Department of Psychology and Center for Brain Science, Harvard University
 
 
 \begin{abstract}
-Word embeddings trained on large corpora are frequently used as features for NLP systems. Recent research has attempted to generate such vector space embeddings for larger pieces of text, such as sentences and paragraphs. While these sentence representations outperform bag-of-words models on several tasks, it is unclear how much compositionality they truly capture. We present a dataset for a natural language inference task that cannot be solved using only lexical/word level knowledge and instead requires varying degrees of compositionality. We use sentence embeddings from InferSent \citep{Conneau:2017uf}, the state of the art in sentence level transfer tasks, and find that performance on our tasks is poor, indicating that the representations induced by this model capture little compositionality. We analyze what limited compositionality is in fact learned by InferSent (affording it higher performance on NLI than bag-of-words models) and find that it is largely driven by InferSent encoding some bi and tri grams that occur with high frequency, and the ability to detect permutations of word order, rather than encoding truly sentence-level representations.o
-
+Word embeddings trained on large corpora are frequently used as features for NLP systems. Recent research has attempted to generate such vector space embeddings for larger pieces of text, such as sentences and paragraphs. The understanding of language and the combinatorially large number of possible sentences hinges on the ability to understand the systematic compositionality of how words combine. While these vector representations of sentences outperform bag-of-words models on several tasks, it is unclear how much compositionality they truly capture. We present a dataset for a natural language inference task that cannot be solved using only lexical/word level knowledge and instead requires varying degrees of compositionality. We use sentence embeddings from InferSent \citep{Conneau:2017uf}, the state of the art in sentence level transfer tasks, and find that performance on our tasks is poor, indicating that the representations induced by this model capture little compositionality. We analyze what limited compositionality is in fact learned by InferSent (affording it higher performance on NLI than bag-of-words models) and find that it is largely driven by some simple heuristics at the word level that are ecologically valid in the SNLI dataset. This highlights the potential difficulties in training such general purpose function approximators such as RNNs for a task as complex and specific as understaning language, and the importance of having structured datasets in better understanding the performance of these systems (as well as in improving their performance).
 \textbf{Keywords:} 
 Sentence embeddings; compositionality; test data sets
 \end{abstract}
@@ -59,10 +57,12 @@ Sentence embeddings; compositionality; test data sets
 
 \section{Introduction}
 
-Understanding language requires the understanding not just of the words, but of their relation and ordering in a sentence. Models of word semantics where words are embedded in a vector space have been successful in capturing the meanings of words. However, due to the combinatorial productivity of language, the number of possible sentences far exceeds the size of the vocabulary, and generating similar vector embeddings for sentences has proved challenging. Recent literature reports several supervised as well as unsupervised approaches to learning sentence representations using Recurrent Neural Networks that account for word ordering \citep{Kiros:2015uq, Hill:2016uu, Conneau:2017uf}. These are intended to capture their semantic content, and perform reasonably well on transfer tasks---i.e. other semantic tasks which the embeddings were not specifically trained on. Particularly, the performance of these sentence models on these tasks supersedes the performance of bag-of-words models that patently lack any relational information about the words, i.e. lack any compositionality. However, it is unclear exactly what kind of compositional information is gained in these sentence models, above lexical meaning. We try to address this question by designing a dataset that relies in increasing degree of compositional information, and is intractable for systems that capture only lexical information. Further, we try to characterize the compositional information in these sentence embeddings by understanding the cases where the sentence models succeed but the BOW models fail. \demi{Based on our observations, we hypothesize that the reason InferSent or modern neural network models, especially discriminative ones, failed to learn the compositionality of sentences is that they heavily relies on the data distribution, and often tends to overgeneralize patterns in training data. Thus, data is essential to learn a model with compositionality. We attempt to verify our hypothesis by further analyzing some of our previous observations to understand how the model learned to behave in this way. Finally, we retrained a model on a dataset combining our carefully designed ScrambleTest set and original SNLI train set. }
+Understanding language requires the understanding not just of the words, but of their relation and ordering in a sentence. Models of word semantics where words are embedded in a vector space have been successful in capturing the meanings of words. However, due to the combinatorial productivity of language, the number of possible sentences far exceeds the size of the vocabulary, and generating similar vector embeddings for sentences has proved challenging. Recent literature reports several supervised as well as unsupervised approaches to learning sentence representations using Recurrent Neural Networks that account for word ordering \citep{Kiros:2015uq, Hill:2016uu, Conneau:2017uf}. 
+% Consider commenting on neural Turing machine type thing - i.e. nn with memory?
+These are intended to capture their semantic content, and perform reasonably well on transfer tasks---i.e. other semantic tasks which the embeddings were not specifically trained on. Particularly, the performance of these sentence models on these tasks supersedes the performance of bag-of-words models that patently lack any relational information about the words, i.e. lack any compositionality. However, it is unclear exactly what kind of compositional information is gained in these sentence models, above lexical meaning. We try to address this question by designing a dataset that relies on increasing degrees of compositional information, and is intractable for systems that capture only lexical information. Further, we try to characterize the compositional information in these sentence embeddings by understanding the cases where the sentence models succeed but the BOW models fail. Based on our observations, we hypothesize that the reason InferSent or modern neural network models fail to learn the compositionality of sentences is that they heavily rely on the data distribution, and overgeneralize patterns in training data. Given the exponentially large number of possible sentences, most subsets of sentences unless meticulously designed, can be justified by heuristics simpler than the true generative process of language. We analyze these heuristics and find their ecological validity in the SNLI dataset.  Finally, we retrain a model on a dataset combining our ScrambleTest set and original SNLI train set to see if structured datasets like ours can be learned by the InferSent architecture.
 
 \section{NLI classifier}
-The sentence embeddings we use are from InferSent \citep{Conneau:2017uf}, the current state of the art in performance on transfer in semantic tasks. We expect that this indicates that the embeddings provide a good representation for the semantics of a sentence. These embeddings were trained end-to-end using the architecture in Figure \ref{fig:arch} on the SNLI training set \citep{snli:emnlp2015}. The task was to classify pairs of sentences into `entailment', `contradiction', or `neutral'. The embeddings were shown to perform well on other tasks (such as sentiment analysis, semantic textual similarity and other natural language inference datasets) by re-using the embedding layers and training only the classifier for the specific task at hand. In the following, we use the pre-trained embeddings made available by the authors, featurized as suggested. We trained a classifier on the SNLI training set independently (using logistic regression as well as multilayer perceptron with a single hidden layer), with regularization optimized on the SNLI validation set. The bag of words (BOW) baseline model averages the GloVe embeddings for all the words in the sentence to form a sentence embedding. The BOW-LR and BOW-MLP achieve $50.24\%$ and $53.99\%$ accuracy respectively and the InferSent embeddings (LR and MLP) achieve $83.61\%$ and $83.45\%$ accuracy, on the SNLI test set. Details of The logistic regressions are in Figures \ref{fig:SNLIBOWhist} and \ref{fig:SNLIIShist}, MLP results look qualitatively similar.
+The sentence embeddings we use are from InferSent \citep{Conneau:2017uf}. We choose to use these sentence embeddings as they hold the current state of the art for transfer in semantic tasks, and we expect that strong performance in transfer tasks indicates a good representation for the semantics of a sentence. These embeddings were trained end-to-end using the architecture in Figure \ref{fig:arch} on the SNLI training set \citep{snli:emnlp2015}. The training tasks is to classify pairs of sentences into `entailment', `contradiction', or `neutral'. The embeddings were shown to perform well on other tasks (such as sentiment analysis, semantic textual similarity and other natural language inference datasets) by re-using the embedding layers and training only the classifier for the specific task at hand. In the following, we use the pre-trained embeddings made available by the authors, featurized as suggested. We trained a classifier on the SNLI training set independently (using logistic regression as well as multilayer perceptron with a single hidden layer), with regularization optimized on the SNLI validation set. The bag of words (BOW) baseline model averages the GloVe embeddings for all the words in the sentence to form a sentence embedding. The BOW-LR and BOW-MLP achieve $50.24\%$ and $53.99\%$ accuracy respectively and the InferSent embeddings (LR and MLP) achieve $83.61\%$ and $83.45\%$ accuracy, on the SNLI test set (comparable to the performance in the end-to-end trained classifier as reported in \cite{Conneau:2017uf}). Details of The logistic regressions are in Figures \ref{fig:SNLIBOWhist} and \ref{fig:SNLIIShist}, MLP results look qualitatively similar.
 
 \begin{figure}[ht!]
 \centering
@@ -121,8 +121,8 @@ The sentence embeddings we use are from InferSent \citep{Conneau:2017uf}, the cu
 \section{Test data set}
 Our goal is to design sets of pairs of sentences such that the relation within a pair (entailment, neutral or contradiction) can be changed without changing the words involved, simply by changing the word ordering within each sentence.
 
-There are different levels of difficulty in the kinds of tasks we consider. The datasets are made up of two sets of sentence pairs, with two different relationships (of entailment, contradiction and neutral), such that the words in each sentence of the pair are the same across the set, but are reordered. Each data set consists of pairs with one of two relationships (among the 3 possible of entailment, neutral and contrdiction) in equal number.\\
-Therefore, the maximum possible performance of a bag of words model is $50\%$, since it cannot distinguish the two pairs in the set, and cannot classify them differently. This provides a hard baseline for the performance that is possible without compositional understanding. Any performance above the BOW model is often seen as proof of compositionality. However, this is an unfair comparison – the bag of words model receives only averaged word vectors for the whole sentence. That is, it doesn't even receive all the lexical information.  We can gauge the compositionality that InferSent learns by seeing how differently it classifies these scrambled sets, and measuring its performance above $50\%$. Further, we make two copies of each dataset, one with exclusively short noun phrases (eg. `the boy'), or long noun phrases (eg. `the boy holding an umbrella') as a control to see how length affects performance.
+There are different levels of difficulty in the kinds of tasks we consider. The datasets are made up of two sets of sentence pairs, with two different relationships (of entailment, contradiction and neutral), such that the words in each sentence of the pair are the same across the set, but are reordered. Each data-set consists of such sets of sentence pairs, so that there are equal numbers of sentence pairs with two different relationships (among entailment, neutral and contrdiction).\\
+Therefore, the maximum possible performance of a bag of words model is $50\%$, since it cannot distinguish the two pairs in the set, and cannot classify them differently. This provides a hard baseline for the performance that is possible without compositional understanding. Any performance above the BOW model is often seen as proof of compositionality. However, this is an unfair comparison – the bag of words model baseline as implemented for comparsons receives only averaged word vectors for the sentence and therefore theoretically also loses some of the lexical information.  We can gauge the compositionality that InferSent learns by seeing how differently it classifies these scrambled sets, and measuring its performance above $50\%$. Further, we make two copies of each dataset, one with exclusively short noun phrases (eg. `the boy'), or long noun phrases (eg. `the boy holding an umbrella') as a control to see how length affects performance.
 
 \subsection{Verb Symmetry}
 
@@ -249,7 +249,7 @@ There is unequal effect of negating the condition for a phenomena or the phenome
 
 
 \section{Experiments}
-We first do the analysis based on the percentage of correct classifications obtained by each of the 4 classifiers we have -- logistic regression trained on InferSent embeddings or trained on averaged GloVe embeddings, i.e. the Bag-of-Words baseline, as well as an MLP (with one hidden layer) trained on each of these embeddings.
+We first do the analysis based on the percentage of correct classifications obtained by each of the 4 classifiers we have -- MLP (with one hidden layer) trained on InferSent embeddings or trained on averaged GloVe embeddings, i.e. the Bag-of-Words baseline, as well as a logistic regression trained on each of these embeddings.
 \begin{figure}[t!]
 \centering
 \includegraphics[width=0.45\textwidth]{AllTasks.png}
@@ -269,9 +269,9 @@ We see that, as expected, BOW never exceeds $50\%$ precision. In fact, BOW think
 
 \section{Classification Analysis}
 
-In order to better understand InferSent's performance, we look at the specific classifications it makes. We just consider the MLP results on short noun phrases for now, long noun phrase results, and logistic regression results are in the appendix. We see that for BOW, the labels are exactly symmetric across the two true categories in each task (Figure \ref{fig:BOWhistMLPshorts}) by design, since members of each category are just scrambled versions of each other and BOW cannot distinguish them. A sign of using more than word-level information is the asymmetry between the classifications of the two categories.
+In order to better understand InferSent's performance, we look at the specific classifications it makes. We just consider the MLP results on short noun phrases. Resulst for long noun phrase, and both results for logistic regression results are in the appendix. We see that for BOW, the classifications made are exactly symmetric across the two true categories in each task (Figure \ref{fig:BOWhistMLPshorts}) by design, since members of each category are just scrambled versions of each other and BOW cannot distinguish them. A sign of using more than word-level information is the asymmetry between the classifications of the two categories.
 
-We divide the performance of InferSent into three categories – `high asymmetry, high scores' where more than word level information is used to make the right inferences, `high asymmetry (Figure \ref{fig:IShistMLP-PP}), low success' where more than word level information is used, but not to make the right inferences (Figure \ref{fig:IShistMLP-NP}), `low asymmetry, low success' where InferSent fails to use more than word level information (Figure \ref{fig:IShistMLP-NN}). Here we designate `high' perfromance to anywhere with more than $50\%$ scores. We choose this distinction because not using more than word level information will ensure bad performance on these tasks, but use of more than word level information doesn't guarantee good performance. This is because each task consists of members of two classes, but there are 3 classes into which the classifier can place each pair. Classification into the third class will always result in low performance, even if the classification differentially uses more than word level information (i.e. if there is high asymmetry).
+We divide the performance of InferSent into three categories – `high asymmetry, high scores' where more than word level information is used to make the right inferences, `high asymmetry (Figure \ref{fig:IShistMLP-PP}), low success' where more than word level information is used, but not to make the right inferences (Figure \ref{fig:IShistMLP-NP}), `low asymmetry, low success' where InferSent fails to use more than word level information (Figure \ref{fig:IShistMLP-NN}). Here we designate `high' perfromance very loosely to anywhere with more than $50\%$ scores. We choose this set of distinctions because not using more than word level information will ensure bad performance on these tasks, but use of more than word level information doesn't guarantee good performance. This is because each task consists of members of two classes, but there are 3 classes into which the classifier can place each pair. Classification into the third class will always result in low performance, even if the classification differentially uses more than word level information (i.e. if there is high asymmetry).
 
 \begin{figure}[ht!]
 \centering
@@ -301,22 +301,91 @@ We divide the performance of InferSent into three categories – `high asymmetry
 
 \section{Observations}
 
+We analyse some of the patterns we observe and study the possible origins of this behavior based on the statstics of the SNLI dataset.
+
 \subsubsection{All same words}
-When the words in both sentences are the same, they are classified as entailing one another, unless there is presence of certain words that have been learned to promote ordering sensitivity. We see that the order of the sentence leads to no difference in classification of temporal ordering type sentences (Figure \ref{fig:IShistMLP-NN}b).\\
-{\tt  A: The woman stood up after the man stood up \\ B: The woman stood up after the man stood up \\ ENTAILMENT \\}{\tt A: The woman stood up after the man stood up \\ B: The man stood up after the woman stood up \\ CONTRADICTION}\\
-This is perhaps because the SNLI dataset does not contain many time-ordered events, and has not learned the meanings of the words `before' and `after' and that they promote ordering. However, other sentence pairs in which the words remain the same across the pair, like the sentence pairs for same-type comparisons that contain words like `more' and `less'(Figure \ref{fig:IShistMLP-PP}c), as well as the verb symmetry tasks that contain verbs like `overtake' (Figures \ref{fig:IShistMLP-PP}e \& \ref{fig:IShistMLP-NP}c) do demonstrate some order sensitivity.
+When the words in both sentences are the same, they are classified as entailing one another, except in the presence of certain words. 
+We observe that in SNLI dataset, most contradictory sentence pairs have no overlap in words. It's much more likely for a sentence pair to be entailment or neutral if they have a lot of words overlap. For example, a contradictory sentence pair in SNLI is:\\
+% @Demi: We should keep the format of how we present example sentences consistent. Also, is this example actually in SNLI?
+{\tt A: Several people are trying to climb a ladder in a tree. \\ B: People are watching a ball game. \\ CONTRADICTION}
+
+In order to qualitatively verify this observation, we rank all the sentence pairs by overlap rate: $\frac{\text{\# of overlap words}}{\text{total \# of words}}$(in non-increasing order). We then look at top X sentences with highest overlap (or \textit{relevance}), and we observe:
+
+\begin{table}[htb]
+  %%\centering
+  \resizebox{\columnwidth}{!}{%
+  \begin{tabular}{|l|l|l|l|}
+  \hline
+     Top &Entailment & Neutral & Contradiction \\
+    \hline\hline
+All & 183416 (33.4 \%) & 182764 (33.3 \%) & 183187 (33.3 \%) \\
+\hline 
+10000 & 3954 (39.5 \%) & 3567 (35.7 \%) & 2479 (24.8 \%)\\
+\hline
+ 1000 & 508 (50.8 \%) & 407 (40.7 \%) & 85 (8.5 \%)\\
+ \hline
+  \end{tabular}}
+ \caption{High Overlap of words in SNLI}
+  \label{tab:highOverlap}
+\end{table}
+
+As shown in Table \ref{tab:highOverlap}, $91.5\%$ of the pairs with maximum overlap between the sentences have the true label of either entailment or neutral, and are very rarely labelled contradiction. 
 
 \subsubsection{Difference of one word}
+
 When the words in two sentences differ by just one word, the decision is largely based on if those words have opposing meanings irrespective of the order of the words. We see this from performance on more-less type comparisons (Figure \ref{fig:IShistMLP-NN}a). Here the words across the pairs differ only in the presence or absence of the word `more' or `less'. For example:\\
 {\tt A: The woman is more cheerful than the man \\ B: The woman is less cheerful than the man\\ CONTRADICTION \\}{\tt A: The woman is more cheerful than the man \\ B: The man is less cheerful than the woman \\ ENTAILMENT} \\
-Since the relation between the words `more' and `less' is largely contradictory, their use in pair of sentences leads the classifier to presume the sentences are contradictory, irrespective of the order of the words. Similarly, though less clearly, we see that comparatives that differ in the presence  or absence of the negation `not', are largely classified as contradictions (Figure \ref{fig:IShistMLP-NP}a).
+Since the relation between the words `more' and `less' is largely contradictory, their use in pair of sentences leads the classifier to presume the sentences are contradictory, irrespective of the order of the words. 
+%We further confirm this observation, to see that $60.0 \%$ sentence pairs that Infersent classified as contradiction contain antonyms.
+% @Demi: What is the base rate of antonyms to compare this against? Or the rate for entailments?
+% @Demi: Would be good to include where you get the antonym data set from - i.e. how do you know the sentences contain antonyms?
 
 
-\subsubsection{Negating bi-grams}
-Negating bi-grams, i.e. combining a phrase with `not' is perhaps encoded. This could be argued from the asymmetry in negating a conditional (Figure \ref{fig:IShistMLP-NP}b).
-\\
-{\tt A: If there is a lot of snow, it is very cold \\ B: If there is a lot of snow, it is not very cold \\ CONTRADICTION \\}{\tt A: If there is a lot of snow, it is very cold \\ B: If there is not a lot of snow, it is very cold \\ NEUTRAL}\\
-Where the binding of not with the different verb-phrases would allow for the observed asymmetry. However, it could also be explained by sensitivity to where in the sentence the `not' occurs, with the first `is' or the second. Performance on this tasks stays low. despite high asymmetry, due to misclassification of all the neutral pairs in the dataset as entailment.
+We now observe that this heuristic is fairly consistent with SNLI data. 
+\begin{table}[htb]
+  %%\centering
+  \resizebox{0.9\columnwidth}{!}{%
+  \begin{tabular}{|l|l|l|l|}
+  \hline
+    & P(Antonym $|$ X) & P( X $|$ Antonym) \\
+    \hline\hline
+    X = Contradiction & 12.2 \% & 61.2 \% \\
+      X = Entailment &  3.5 \% &  18.0 \% \\
+\hline 
+  \end{tabular}}
+ \caption{ Antonym word pair in the SNLI data set}
+  \label{tab:antonyms}
+\end{table}
+
+We see in Table \ref{tab:antonyms} that the presence of antonyms strongly predicts a true label of contradiction in the SNLI data set. If we consider only the top 1000 in the high overlap set, the trend is more evident with $43.5 \%$ contradiction sentence pairs containing antonyms, and only $8.7 \%$ entailment sentence pairs containing antonyms. 
+
+%We also find that the presence of antonyms that are most used in the SNLI data set are more likely to indicate contradiction for InferSent. For example, the antonyms  women/men, boy/girl and black/white appear more frequently in the SNLI sentence pairs than antonyms like old/young, sitting/standing, and sentences that differ by the first set of antonym pairs are more likely to be classified as contradiction by InferSent, than sentences that differ by the second set of antonym pairs.
+
+\subsubsection{Negations}
+
+We see that comparatives that differ in the presence  or absence of the negation `not', are largely classified as contradictions (Figure \ref{fig:IShistMLP-NP}a). To verify that our observation strongly correlates with SNLI train data, we look at sentence pairs that contain "negating ngrams": no, not, n't, don't, doesn't.
+% @Demi aren't "don't, doesn't" redundant given "n't"?
+\begin{table}[htb]
+  %%\centering
+  \resizebox{0.9\columnwidth}{!}{%
+  \begin{tabular}{|l|l|l|l|}
+  \hline
+    & P(Negation $|$ X) & P( X $|$ Negation) \\
+    \hline\hline
+    X = Contradiction & 3.3 \% & 58.4 \% \\
+      X = Entailment &  1.1 \% &  20.0 \% \\
+\hline 
+  \end{tabular}}
+ \caption{Overall Data Negation statistics}
+  \label{tab:negation}
+\end{table}
+
+
+We see in Table \ref{tab:negation} that the presence of negations strongly predicts a true label of contradiction in the SNLI data set. If we consider only the top x in the high overlap set, the trend is more evident. 
+% @Demi: for both antonyms and negating, give either top 1000 or top 10,000 overlap statistics. top 10,000 here, top 1000 for antonyms.
+We observe that $60.0 \%$ sentence pairs with negation are contradictions, and only $7.5 \%$ are entailment. \\
+
+%Note that we also did same experiment on more broadly defined negation ngrams which includes Neither, None and etc, and we get similar results. We have $43.6\%$ negation pairs are contradiction, while $27.3\%$ negation pairs are entailment. $7 \%$ contradiction pairs have negation while only $4 \%$ entailment pairs have negation.
 
 
 
@@ -379,135 +448,90 @@ Where the binding of not with the different verb-phrases would allow for the obs
 \end{table*}
 
 
+\subsubsection{The effect of permuting}
+So far we have focused on word level information in the statistics of SNLI in explaining much of InferSent's behavior. A systematic analysis of the effect of word order if challenging due to the combinatorial explosion in the number of possibilities. But we make a few observations.
 
-\subsubsection{Other bi-grams}
-InferSent perhaps encodes meanings of some other bigrams. This is supported by asymmetry in subject-verb binding(Figure \ref{fig:IShistMLP-PP}d) \\
+In some cases, the order of words has no effect whatsoever on the classification made by InferSent, for example with temporal ordering type sentences (Figure \ref{fig:IShistMLP-NN}b).\\
+{\tt  A: The woman stood up after the man stood up \\ B: The woman stood up after the man stood up \\ ENTAILMENT \\}{\tt A: The woman stood up after the man stood up \\ B: The man stood up after the woman stood up \\ CONTRADICTION}\\
+This is perhaps because the SNLI dataset does not contain many time-ordered events, and has not learned the meanings of the words `before' and `after' and that they promote ordering, therefore defaulting to entailment due to the high overlap.\\
+The presence of words/short N-grams that are known to contradict each other (`more X'/`less X', `is'/`is not', other antonyms), or just words that indicate order sensitivity (`more', `overtake'), seem to elicit some word order sensitivity for InferSent.  
+From qualitative analysis, we observe that if common antonyms are swapped in order, then Infersent will likely classify this sentence pair as a contradiction. For example:
+{\tt A: Boy sitting with a girl on the bench in the park \\ B: Girl sitting with a boy on the bench in the park}
+%Moreover, we observe that when the order of common antonyms are swapped, then it's highly likely this is a contradiction in SNLI training dataset.
+% @Demi: verify using quantitative data that above claims are correct
+% TODO: check how confident InferSent is on temporal ordering classifications
+
+We conjecture that simply a larger perturbation to the permutation of words (in the presence of these "order promoting" words) takes the classification closer to contradiction. This is trivially true for cases where zero perturbation results in an entailment inference, and a perturbation to order the order sometimes leads to a contradiction (same-type comparatives, verb-symmetries in Figures \ref{fig:IShistMLP-PP}c,e \ref{fig:IShistMLP-NP}c). But the key observation that supports this conjecture is in the case of comparatives of the `not' type \ref{fig:IShistMLP-NP}a. 
+{\tt A: The woman is more cheerful than the man \\ B: The woman is not more cheerful than the man\\ CONTRADICTION \\}{\tt A: The woman is more cheerful than the man \\ B: The man is not more cheerful than the woman \\ ENTAILMENT} \\
+Here, all pairs of sentences differ in the presence of `not', and as observed in the section on `negations' we see that all of these are more likely classified as contradictions than entailments. But in this dataset, pairs that more perturbed in the word order are in fact entailments. \\
+We see the reverse trend in the classifications made by InferSent – sentences that are truly entailments, and are more perturbed in word order, are more likely to be classified as contradictions than true contradictions. Further, we also find that while all comparatives of the `more-less' type are classified as contradictions (Figure \ref{fig:IShistMLP-NN}a), the system is more confident about the ones that are truly entailment ($1867/2400$ pairs) being contradictions, i.e. the ones that have a larger perturbation to word order. 
+%This could also perhaps explain why the `who-is' version of the adjective reference binding (Figure \ref{fig:IShistMLP-PP}b) shows a stronger effect than without (Figure \ref{fig:IShistMLP-PP}a), since one entails a larger perturbation to the order of the words because of the extra words `who is'.
+
+\subsubsection{Other asymmetries}
+
+InferSent perhaps encodes meanings of some ngrams. This is supported by asymmetry in subject-verb binding(Figure \ref{fig:IShistMLP-PP}d) \\
 {\tt A: The woman stands up, however the man sits down \\ B: The woman stands up. \\ ENTAILMENT \\}{\tt A: The man stands up, however the woman sits down \\ B: The woman stands up. \\ CONTRADICTION}\\
 Where the distinction requires the system to encode the binding of the words `woman sits' and `man stands'. It also shows asymmetry on adjective-reference binding(Figure \ref{fig:IShistMLP-PP}a)\\
 {\tt A: The tall woman met the short man \\ B: The woman met the short man \\ ENTAILMENT \\}{\tt A: The tall woman met the short man \\ B: The short woman met the man \\ CONTRADICTION}\\
 Where the binding for the word pairs `tall woman' and `short woman' are important. However, the performances on both of these is very low.
 
-\subsubsection{The effect of permuting}
-In the presence of words/short N-grams that are known to contradict each other (`more X'/`less X', `is'/`is not', `tall woman'/`short woman'), or just words that indicate order sensitivity (`more', `overtake'), we can conjecture that it is simply larger perturbation to the permutation of words takes the classification closer to contradiction. This is trivially true for cases where zero perturbation results in an entailment inference, and a perturbation to order the order sometimes leads to a contradiction (same-type comparatives, verb-symmetries in Figures \ref{fig:IShistMLP-PP}c,e \ref{fig:IShistMLP-NP}c). But the key observation that supports this point is in the case of comparatives of the `not' type \ref{fig:IShistMLP-NP}a. Here, all pairs of sentences differ in the presence of `not', but those that more perturbed are in fact entailments. \\
-{\tt A: The woman is more cheerful than the man \\ B: The woman is not more cheerful than the man\\ CONTRADICTION \\}{\tt A: The woman is more cheerful than the man \\ B: The man is not more cheerful than the woman \\ ENTAILMENT} \\
-We see the reverse trend in the classifications made by InferSent – sentences that are entailments are more likely to be classified as contradictions than true contradictions. Further, we also find that while all comparatives of the `more-less' type are classified as contradictions (Figure \ref{fig:IShistMLP-NN}a), the system is more confident about the ones that are truly entailment ($1867/2400$ pairs) being contradictions, i.e. the ones that have a larger perturbation to order. This could also perhaps explain why the `who-is' version of the adjective reference binding (Figure \ref{fig:IShistMLP-PP}b) shows a stronger effect than without (Figure \ref{fig:IShistMLP-PP}a), since one entails a larger perturbation to the order of the words because of the extra words `who is'.
+Also, perhaps the combining of a phrase with `not' is encoded. This could be argued from the asymmetry in negating a conditional (Figure \ref{fig:IShistMLP-NP}b).
+\\
+{\tt A: If there is a lot of snow, it is very cold \\ B: If there is a lot of snow, it is not very cold \\ CONTRADICTION \\}{\tt A: If there is a lot of snow, it is very cold \\ B: If there is not a lot of snow, it is very cold \\ NEUTRAL}\\
+Where the binding of not with the different verb-phrases would allow for the observed asymmetry. However, the number of sentence pairs in this dataset is fairly low and is more difficult to draw conclusions from  %However, it could also be explained by sensitivity to where in the sentence the `not' occurs, with the first `is' or the second. 
+%Performance on this tasks stays low. despite high asymmetry, due to misclassification of all the neutral pairs in the dataset as entailment.
 
-% This indicates that InferSent largely relies on permutations of the same words often indicating contradictions (at least in its training set), rather than true compositionality.
 
-\demi{?} 
 \subsection{SNLI test set}
 
-Our ScrambleTest set is not balanced, and was not part of the training. For a more controlled way to understand the differences between the performance of InferSent and Bow, we try to also look at the cases in the SNLI test set that are correctly classified by InferSent but incorrectly classified by BOW, with a high margin/confidence. See Table \ref{tab:highMargin} for examples. It seems from these that BOW learn contradiction only as `no overlap in words' whereas InferSent is able to have a more nuanced encoding (`man sits' vs `woman sits'). This also explains why BOW classifies almost all of the pairs in our data set as entailments, since most of the pairs in our dataset have a high overlap in the words used. Further, it also is able to encode meanings that straddle two or more words, for example that `runs' entails `is running'. This is consistent on what we observed about bi-grams above. However, it is difficult to make general claims. A better understanding of what InferSent could achieve if also trained on some sentences from our ScrambleTests dataset that highlight the value of word-order and compositionality, is left to future work.
+Our ScrambleTest set is not balanced, and was not part of the training. For a more controlled way to understand the differences between the performance of InferSent and Bow, we try to also look at the cases in the SNLI test set that are correctly classified by InferSent but incorrectly classified by BOW, with a high margin/confidence. See Table \ref{tab:highMargin} for examples. It seems from these that BOW learn contradiction only as `no overlap in words' whereas although InferSent is also strongly affected by the extent of overlap in words, it is able to have a more nuanced encoding (`man sits' vs `woman sits'). This also explains why BOW classifies almost all of the pairs in our data set as entailments, since most of the pairs in our dataset have a high overlap in the words used. Further, it also is able to encode meanings that straddle two or more words, for example that `runs' entails `is running'. This is consistent on what we observed about bi-grams above. However, it is difficult to make general claims. %A better understanding of what InferSent could achieve if also trained on some sentences from our ScrambleTests dataset that highlight the value of word-order and compositionality, is left to future work.
 
-\demi{
-\section{Hypothesis and Solution: Right Data Distribution}
-We hypothesize that the lack of compositionality of Infersent model comes from the misleading SNLI training data. Specifically, for each category misclassification of InferSent model (shown in \textbf{Observation} section), we attempt to explain InferSent model behavior by analyzing training data distribution.
-}
-
-\demi{
-\subsection{All same words}
-We observe that in SNLI dataset, most contradictory sentence pairs are irrelevant sentences. It's much more likely for a sentence pair to be entailment or neutral if they have a lot of words overlap. If this is true, it could possibly explain why our model tends to classify similar sentences as entailment. For example, a contradictory sentence pair could be:\\
-\textit{A:Several people are trying to climb a ladder in a tree .}\\
-\textit{B:People are watching a ball game .}\\
-In order to qualitatively verify this observation, we rank all the sentence pairs by overlap rate: $\frac{\text{\# of overlap words}}{\text{total \# of words in both sentences combined}}$(in non-increasing order). We then look at top X sentences with highest overlap (or \textit{relevance}), and we observe:}
-
-\demi{
-\begin{table}[htb]
-  %%\centering
-  \resizebox{\columnwidth}{!}{%
-  \begin{tabular}{|l|l|l|l|}
-  \hline
-     Top &Entailment & Neutral & Contradiction \\
-    \hline\hline
-All & 183416 (33.4 \%) & 182764 (33.3 \%) & 183187 (33.3 \%) \\
-\hline 
-10000 & 3954 (39.5 \%) & 3567 (35.7 \%) & 2479 (24.8 \%)\\
-\hline
- 1000 & 508 (50.8 \%) & 407 (40.7 \%) & 85 (8.5 \%)\\
- \hline
-  \end{tabular}}
- \caption{High Overlap Data Statistics}
-  \label{tab:highMargin}
-\end{table}As shown in the table, when there are more overlap between two sentences, it's more likely to be entailment or neutral and less likely to be contradiction. Notably, there are only $8.5\%$ contradictory sentence pairs in top 1000 overlap data. }
-
-\demi{
-\subsection{Difference of one word}
-In previous section, we argue that our model tends to classify a sentence pair as "contradiction" if differ only 1 or a few words containing an antonym pair. 
- We further confirm this observation, we see that $60.0 \%$ sentence pairs that Infersent classified as contradiction contain antonyms.\\ We now observe that it's consistent with SNLI data.In top 1000 overlap data, $43.5 \%$ contradiction sentence pairs contain antonyms, whereas only $8.7 \%$ entailment sentence pairs contain antonyms. Even when we include contradiction sentence pairs which are simply irrelevant, there are $12.2 \%$ contradiction sentence pairs contain antonyms, and $3.5 \%$ entailment sentence pairs contain antonyms. Overall, $61.2 \%$ sentence pairs containing antonyms are contradictions, and only $18.0 \%$ are entailment.\\ 
-On the other hand, we found most popular antonyms in contradiction pairs in SNLI are: "women/men", "boy/girl", "black/white" ...... It's extremely consistent with the most popular antonyms in pairs that Infersent classified as contradiction.\\
-Moreover, we qualitatively look at Infersent classification after changing only one word of a sentence. Consider two sentences:\\
-A:"X driving a motorcycle with a girl sitting on back"\\
-B:"Y driving a motorcycle with a girl sitting on back"\\
-We see that when X/Y are popular antonyms such as man/woman, boy/girl, black/white, our model predicts contradiction. However, when X/Y are other antonyms such as old/young, sitting/standing, it still gives entailment.}
-\demi{
-\subsection{Negating}
-To verify that our observation strongly correlates with SNLI train data, we look at sentence pairs that contain "negating ngrams": No, Not, N't, Don't, Doesn't.\\
-On overall data, we have:\\
-\begin{table}[htb]
-  %%\centering
-  \resizebox{\columnwidth}{!}{%
-  \begin{tabular}{|l|l|l|l|}
-  \hline
-     P(N$|$C) & P(C$|$N) & P(N$|$E) & P(E$|$N) \\
-    \hline\hline
-3.3\% & 58.4 \% & 1.1 \% &  20.0\% \\
-\hline 
-  \end{tabular}}
- \caption{Overall Data Negation statistics}
-  \label{tab:highMargin}
-\end{table}
-Here, we denote $N$ as negation, $E$ as entailment and $C$ as contradiction. As we can see, negation correlates more with contradictions than entailment almost 3 times.\\
-Moreover, in top 10,000 overlap data (relevant), in SNLI, we observe that $60.0 \%$ sentence pairs with negation are contradictions, and only $7.5 \%$ are entailment. \\
-Note that we also did same experiment on more broadly defined negation ngrams which includes Neither, None and etc, and we get similar results. We have $43.6\%$ negation pairs are contradiction, while $27.3\%$ negation pairs are entailment. $7 \%$ contradiction pairs have negation while only $4 \%$ entailment pairs have negation.}
-\demi{
-\subsection{Permuting}
-From qualitative analysis, we observe that if common antonyms are swapped in order, then Infersent will likely classify this sentence pair as a contradiction. For example:\\
- A:"Boy sitting with a girl on the bench in the park"\\
- B:"Girl sitting with a boy on the bench in the park"\\
- Moreover, we observe that when the order of common antonyms are swapped, then it's highly likely this is a contradiction in SNLI training dataset.
-(TODO:verify using quantitative data that my above claims are correct)}
-
-\demi{
-\subsection{Retraining}
+\section{Augmented training}
 Now, we experiment with retraining the InferSent model on a combined dataset which includes both new ScrambleTest and original SNLI training data. \\
-The new ScrambleTest data uses a similar generation process as our old ScrambleTest data. However, we only generate "comparative" data. We have positive comparative phrase (p) such as "more adj." and negative comparative phrase (n) such as "less adj.". The two sentences will be in the format of such as "np1 is p than np2." and "np2 is n than np1".We give our data generator a large set of possible adjectives and noun phrases. \\Then, when generating a data point, we randomly sample an adjective and 2 noun phrases. In total, we generated 40k such sentence pairs, which is roughly $7 \%$ of overall SNLI training data (550k sentence pairs).\\
-Moreover, in order to minimize the effect of other factors such as vocabulary distribution. We intentionally modified our generation process (through picking noun phrases and adjectives and designing sample distribution), so that the vocabulary distribution of this newly generated ScrambleTest is similar to original SNLI training dataset. Only 7 words differ by at least $1 \%$ occurrence: not, a, than, the, is, less, more. Those are words which are necessary to have a difference.\\}
-
-
+The new ScrambleTest data uses a similar generation process as our old ScrambleTest data. However, we only generate data of the `comparisons' type since the performance of InferSent on these is the most interpretable. The training dataste is generated as follows: we collect positive comparison phrases (p) such as "more adj." where "adj." is some adjective, and negative comparison phrases (n) such as "less adj.". The two sentences in a pair are of the form "(np1) is (p) than (np2)." and "(np2) is (n) than (np1).", where (np1) and (np2) are applicable noun phrases. The adjectives and noun phrases are randomly sampled from a large set of given possibilities. In total, we generated 40k such sentence pairs, which is roughly $7 \%$ of overall SNLI training data (550k sentence pairs).\\
+Moreover, in order to minimize the effect of other factors such as vocabulary distribution. We intentionally modified our generation process, so that the vocabulary distribution of this newly generated ScrambleTest is similar to original SNLI training dataset. Only 7 words differ by more than %(@Demi : Is this right? Chnaged from "at leats 1%" because that was confusing) 
+$1 \%$ in their occurrence in SNLI: not, a, than, the, is, less, more. \\
 
 
 \section{Summary of findings}
-The classifier based on InferSent definitely does not capture all of the compositionality in sentence structure. While it is difficult to pin down exactly what it is that the classifier does pick up on, certain behaviors draw attention to some patently misguided encoding of compositionality. We draw attention to two specific sub-tasks to highlight this. 
+The classifier based on InferSent definitely does not capture all of the compositionality in sentence structure. While it is difficult to pin down exactly what it is that the classifier does pick up on, certain behaviors draw attention to some potentially heuristic encodings of sentence compositionality. 
 
-First, we see in the more/less-type comparison class, where the words in the pairs of sentences differ only in whether they contain the word `more' or the word `less', that the presence of words that contradict each other in the two sentences of a pair consistently leads the classifier to think the sentences overall contradict each other. This illustrates a disproportionate dependence on lexical, rather than compositional meaning. The large percentage of the not-type comparisons, where the words in the pairs of sentences differ only in whether they contain the word `not' or not, being classified as contradictions also support this finding. 
+First, we see that the difference of one word between the two sentences, when the difference is an antonym or a negation, leads to InferSent tending to classify them as contradictions irrespective of word order. This is best highlighted in the more/less type and not type comparison dataset tests. This heuristic has ecological validity in the training set – as shown in Tables \ref{tab:antonyms} and \ref{tab:negation}, we see that the presence of negations and antonyms strongly correlate with a contradiction label. This illustrates a disproportionate dependence on lexical, rather than compositional meaning in InferSent. 
 
-Second, in cases where even the words across the pairs are the same, we see that sometimes the order of the words is detected, and taken into account for the classification (as indicated in performance on the verb-symmetries and the same-type comparisons). Here, the same sentence repeated is the entailment, and a change of the order of the words indicates a contradiction. This is sometimes detected and (correctly in this case) tagged a contradiction. However, for the not-type comparisons, the more jumbled pairs are in fact entailments. The classifier does the opposite, with true entailments (that is more jumbled ones) more often being classified as contradiction than the true contradictions. This patterns also holds for more/less-type comparisons, where the classifier is more confident about true entailments (i.e. the more jumbled pair) being contradictions, than the true contradictions ($78\%$ of the time). This hints at one way in which order information might be used, but just as a heuristic that might often work, but isn't fully utilizing compositionality.
+Second, in cases where even the words across the pairs are the same, we see that sometimes the order of the words is detected, and taken into account for the classification (as indicated in performance on the verb-symmetries and the same-type comparisons). This is sometimes detected and (correctly in this case) tagged a contradiction. However, for the not-type comparisons, the more jumbled pairs are in fact entailments. The classifier does the opposite, with true entailments (that is more jumbled ones) more often being classified as contradiction than the true contradictions. This hints at one way in which order information might be used, but is a heuristic that might often work. Finding ecological valididty for permutations in SNLI is challenging and we leave this to future work.
 
-Finally, we see that there are some other cases in which InferSent performs above $50\%$, indicating that it is picking up some more information, although clearly not enough to perform competitively on these compositional tasks. Further work is needed to better isolate exactly what is learned, but is beyond the scope of this work.
+Finally, we see that there are some other cases in which InferSent performs above $50\%$, indicating that it is picking up some information about the relative positions of the words, although clearly not enough to perform competitively on these compositional tasks. Further work is needed to better isolate exactly what is learned, but is beyond the scope of this work.
 
-This work also demonstrates the inadequacy of most datasets available today in truly testing if compositional structure, i.e. structure beyond lexical structure, is being picked up by NLP models. InferSent achieves very high performance on the test set of the SNLI dataset, \textit{as well as several other tasks}, but fails on our dataset. Our ScrambleTest dataset is available online to test future models on. Some of the sub-types, particularly comparisons, adjective-referent binding, and subject-verb binding have enough sentence pairs to be able to consider including some of them during training to augment the classifier. We leave this to future work.
+This work demonstrates the inadequacy of most datasets available today in truly testing if compositional structure, i.e. structure beyond lexical structure, is being picked up by NLP models. InferSent achieves very high performance on the test set of the SNLI dataset, \textit{as well as several other tasks}, but fails on our dataset. Our ScrambleTest dataset is available online to test future models on. This work highlights the value of crafting diagnostic datasets, in the spirit of tasks designed in in cognitive psychology, in better understanding the behavior of these complex models. Our results on augmented training also show promise for systematic training sets... xyz.
+% @Demi: todo, fill in trained network results
+
+%Some of the sub-types, particularly comparisons, adjective-referent binding, and subject-verb binding have enough sentence pairs to be able to consider including some of them during training to augment the classifier. We leave this to future work.
 
 \section{Future Directions}
 
-\begin{itemize}
-\item How much info do the sentence representations actually have?
-\begin{itemize}
-\item BOW: How much is lost due to averaging, and to what extent is it possible to back out the words? Include `product of all word reps' and other (?) operations that are symmetric to word position to improve info transfer about words in the sentence as a \textbf{fairer BOW baseline comparison}.
-\item InferSent: Could a decoder recreate the sentence from the last hidden state of an RNN? 
-\end{itemize}
-\item Are the ScrambleTests examples just too different from SNLI to make a fair comparison?
-\begin{itemize}
-\item Train on part of the ScrambleTest data, ensuring no overfitting and retest.
-\item Ensure that distributional characteristics (base rates of words for eg, and other statistics) are comparable to SNLI.
-\end{itemize}
-\item What are the differences between the results from LogReg and MLP?
-\item Test other sentence representations 
-\item Find more precisely:
-\begin{itemize}
-\item Description of incremental compositional information needed and how different types of scrambled data sets provide a paving.
-\item What exactly InferSent classifies based on (LIME?). But perhaps that's getting too invested in InferSent in particular.
-\end{itemize} 
-\end{itemize}
+This is one step towards building better diagnostic test sets to score NLI models like InferSent. Other interesting things to try would be to see how other models, particularly generative models like SkipThought, differ on these metrics. Further, we could use more sophisticated methods like LIME (Local Interpretable Model-Agnostic Explanations, \cite{ribeiro2016should}) to generate interpretable explanations for its classifications and understand the performance of these models on diagnostic datasets. 
+
+
+
+%\begin{itemize}
+%\item How much info do the sentence representations actually have?
+%\begin{itemize}
+%\item BOW: How much is lost due to averaging, and to what extent is it possible to back out the words? Include `product of all word reps' and other (?) operations that are symmetric to word position to improve info transfer about words in the sentence as a \textbf{fairer BOW baseline comparison}.
+%\item InferSent: Could a decoder recreate the sentence from the last hidden state of an RNN? 
+%\end{itemize}
+%\item Are the ScrambleTests examples just too different from SNLI to make a fair comparison?
+%\begin{itemize}
+%\item Train on part of the ScrambleTest data, ensuring no overfitting and retest.
+%\item Ensure that distributional characteristics (base rates of words for eg, and other statistics) are comparable to SNLI.
+%\end{itemize}
+%\item What are the differences between the results from LogReg and MLP?
+%\item Test other sentence representations 
+%\item Find more precisely:
+%\begin{itemize}
+%\item Description of incremental compositional information needed and how different types of scrambled data sets provide a paving.
+%\item What exactly InferSent classifies based on (LIME?). But perhaps that's getting too invested in InferSent in particular.
+%\end{itemize} 
+%\end{itemize}
 
 \bibliographystyle{apa-good}
 \bibliography{library}

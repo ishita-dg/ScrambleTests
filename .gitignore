@@ -12,3 +12,5 @@ models/*Archive*
 *.aux
 *.log
 *.synctex.gz
+*.bbl
+*.blg
