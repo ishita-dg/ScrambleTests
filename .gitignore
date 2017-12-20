@@ -9,3 +9,6 @@ models/*MLP
 *_old*
 *.pyc
 models/*Archive*
+*.aux
+*.log
+*.synctex.gz
