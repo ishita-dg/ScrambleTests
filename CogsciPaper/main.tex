@@ -503,17 +503,75 @@ Where the binding of not with the different verb-phrases would allow for the obs
 Our ScrambleTest set is not balanced, and was not part of the training. For a more controlled way to understand the differences between the performance of InferSent and Bow, we try to also look at the cases in the SNLI test set that are correctly classified by InferSent but incorrectly classified by BOW, with a high margin/confidence. See Table \ref{tab:highMargin} for examples. It seems from these that BOW learn contradiction only as `no overlap in words' whereas although InferSent is also strongly affected by the extent of overlap in words, it is able to have a more nuanced encoding (`man sits' vs `woman sits'). This also explains why BOW classifies almost all of the pairs in our data set as entailments, since most of the pairs in our dataset have a high overlap in the words used. Further, it also is able to encode meanings that straddle two or more words, for example that `runs' entails `is running'. This is consistent on what we observed about bi-grams above. However, it is difficult to make general claims. %A better understanding of what InferSent could achieve if also trained on some sentences from our ScrambleTests dataset that highlight the value of word-order and compositionality, is left to future work.
 
 \section{Augmented training}
+
 Now, we experiment with retraining the InferSent model on a combined dataset which includes both new ScrambleTest and original SNLI training data. \\
-The new ScrambleTest data uses a similar generation process as our old ScrambleTest data. However, we only generate data of the `comparisons' type since the performance of InferSent on these is the most interpretable. The training dataste is generated as follows: we collect positive comparison phrases (p) such as "more adj." where "adj." is some adjective, and negative comparison phrases (n) such as "less adj.". The two sentences in a pair are of the form "(np1) is (p) than (np2)." and "(np2) is (n) than (np1).", where (np1) and (np2) are applicable noun phrases. The adjectives and noun phrases are randomly sampled from a large set of given possibilities. In total, we generated 40k such sentence pairs, which is roughly $7 \%$ of overall SNLI training data (550k sentence pairs).\\
-Moreover, in order to minimize the effect of other factors such as vocabulary distribution. We intentionally modified our generation process, so that the vocabulary distribution of this newly generated ScrambleTest is similar to original SNLI training dataset. Only 7 words differ by more than %(@Demi : Is this right? Chnaged from "at leats 1%" because that was confusing) 
-$1 \%$ in their occurrence in SNLI: not, a, than, the, is, less, more. \\
+
+We decided to genereate a new ScrambleTest dataset with only comparative types data, so that our analysis could be more clear and straightforward. As we can see from the results in previous Experiments section, InferSent model trained on SNLI dataset only performs very poorly on comparative type data, mostly ranging from 40 to 50 percent accuracy except ~80 percent on comp (same) data. We want to see how InferSent model can perform after training on a dataset augmented with comparative types ScrambleTest data. \\
+
+In this way, we have a better understanding of the nonideal performance of InferSent model on ScrambleTest data: Is it because of the design of InferSet model, or the data?
+
+\subsection{New ScrambleTest Data}
+In our New ScrambleTest data, it consists of $\frac{1}{3}$ Comp (more/less) data, $\frac{1}{3}$ Comp (not) data, and $\frac{1}{3}$ Comp (same) data.\\
+Moreover, we divide our New ScrambleTest data into train, validation, and test. Train data consists of around 40k sentence pairs, which is roughly $7 \%$ of 550k total SNLI train data. Each validation and test data consists of 2000 sentence pairs.\\
+Moreover, in order to minimize the effect of other factors such as vocabulary distribution. We intentionally modified our generation process, so that the vocabulary distribution of this New  ScrambleTest is similar to original SNLI training dataset. Only several words differ by more than %(@Demi : Is this right? Chnaged from "at leats 1%" because that was confusing) 
+$1 \%$ in their occurrence in SNLI, such as not, a, than, the, is, less, more, which is inevitable by the chosen special property of New ScrambleTest data.
+
+\subsection{Set Up}
+Since InferSent model is not fully public, and only the encoder part is provided, we trained a InferSent model with default parameters (following official website's instruction) ourselves. Our InferSent model gives us 84.73 accuracy on validation and 84.84 accuracy on Test, which is comparable with results claimed in the paper (85 on validation and 84.5 on test).\\
+
+Here, we acknowledge that the following experiments setting are using a slightly different dataset (as we described above) and a sligthly different model from the dataset and model in our previous analysis. In order to show the results are likely be transferrable, we check the performance of this new InferSent model (pretraind on SNLI dataset only) on new ScrambleTest data (comparative types only), which turns out to be 46.56 and 45.36 (Table \ref{tab:finetuning}) This seems to be highly consistent with our old model performance on old ScrambleTest comparative data (an average of 50.46, 46.69, 39.38, 34.96, 50.79, 79.81). 
+
+
+\subsection{Experiment: Finetuning}
+In this experiment, we initialize our model with the model pretrained on SNLI dataset only, and then finetune it on our new ScrambleTest dataset. Results are shown in Table \ref{tab:finetuning}. Here, results in epoch 0 represents results before fine-tuning starts. \\
+We observe that model performance degrades on SNLI dataset (from 84.73 to 55.42), but still higher than random baseline 33.3. We also observe that the model eventually peforms very well on ScrambleTest dataset (99.8/99.55 Val/Test accuracy). \\
+Thus, we see that our model tends to match the data it is trained on: it seems that it's slowly unlearning patterns of SNLI dataset and learning patterns of new ScrambleTest dataset. Moreover, the fact that it has high accuracy not only on New ScrambleTest train data but also on test data is interesting. It shows that the model performs well on New ScrambleTest is not that it's highly overfitting and memorizing the train data, and thus InferSent is able to actually learn the patterns in the New ScrambleTest, even though InferSent trained on SNLI performs poorly on New ScrambleTest.
+
+\begin{table}[htb]
+  %%\centering
+  \resizebox{0.9\columnwidth}{!}{%
+  \begin{tabular}{||l|l|l|l|l||}
+  \hline
+    Epoch & Train(New) & Val (SNLI) & Val (New) & Test (New)\\
+    \hline
+    0 & N/A & 84.73 & 46.56 & 45.36\\
+    \hline
+    13 & 100.0 & 55.42 & 99.8 & 99.55\\
+\hline 
+  \end{tabular}}
+ \caption{Experiment: Finetuning}
+  \label{tab:finetuning}
+\end{table}
+
+
+
+\subsection{Experiment: Retrainig from scratch}
+We decided to then experiment with training a new InferSent model entirely from scratch on a training dataset that includes both old SNLI and New ScrambleTest train data.\\
+Results are shown in Table \ref{tab:retraining}. Validation accuracy on SNLI is comparable with the model trained only on SNLI (84.34 vs 84.73). Moreover, validation and test accuracy on New ScrambleTest is much higher than the model trained only on SNLI (99.8/99.55 vs 46.56/45.36).\\
+Now, we see that New ScrambleTest can be helpful: There's a way to use New ScrambleTest so that we can have a model not only with a better performance on New ScrambleTest but also a comparable performance on SNLI dataset.\\
+This result also verifies our previous hypothesis that the model tends to learn and match the training data: one main reason the model performs bad on ScrambleTest is that it lacks of ScrambleTest-like training data.\\
+
+
+\begin{table}[htb]
+  %%\centering
+  \resizebox{0.9\columnwidth}{!}{%
+  \begin{tabular}{||l|l|l|l|l||}
+  \hline
+    Epoch & Train(Combined) & Val (SNLI) & Val (New) & Test (New)\\
+    \hline
+    12 & 94.12 & 84.34 & 100.0 & 100.0\\
+\hline 
+  \end{tabular}}
+ \caption{Experiment: Retraining From Scratch}
+  \label{tab:retraining}
+\end{table}
+
 
 
 \section{Summary of findings}
 The classifier based on InferSent definitely does not capture all of the compositionality in sentence structure. While it is difficult to pin down exactly what it is that the classifier does pick up on, certain behaviors draw attention to some potentially heuristic encodings of sentence compositionality. 
 
 First, we see that the difference of one word between the two sentences, when the difference is an antonym or a negation, leads to InferSent tending to classify them as contradictions irrespective of word order. This is best highlighted in the more/less type and not type comparison dataset tests. This heuristic has ecological validity in the training set – as shown in Tables \ref{tab:antonyms} and \ref{tab:negation}, we see that the presence of negations and antonyms strongly correlate with a contradiction label. This illustrates a disproportionate dependence on lexical, rather than compositional meaning in InferSent. 
-
 Second, in cases where even the words across the pairs are the same, we see that sometimes the order of the words is detected, and taken into account for the classification (as indicated in performance on the verb-symmetries and the same-type comparisons). This is sometimes detected and (correctly in this case) tagged a contradiction. However, for the not-type comparisons, the more jumbled pairs are in fact entailments. The classifier does the opposite, with true entailments (that is more jumbled ones) more often being classified as contradiction than the true contradictions. This hints at one way in which order information might be used, but is a heuristic that might often work. Finding ecological valididty for permutations in SNLI is challenging and we leave this to future work.
 
 Finally, we see that there are some other cases in which InferSent performs above $50\%$, indicating that it is picking up some information about the relative positions of the words, although clearly not enough to perform competitively on these compositional tasks. Further work is needed to better isolate exactly what is learned, but is beyond the scope of this work.
