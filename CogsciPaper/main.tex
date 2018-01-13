@@ -35,11 +35,11 @@
 
 \title{Gauging Compositionality in Sentence Embeddings}
  
-\author{\textbf{Ishita Dasgupta$^1,$  Demi Guo$^4,$ Andreas Stuhlm\"uller$^2,$ Samuel J. Gershman$^3$ \& Noah D. Goodman$^2$}\medskip\\ 
+\author{\textbf{Ishita Dasgupta$^1,$  Demi Guo$^2,$ Andreas Stuhlm\"uller$^3,$ Samuel J. Gershman$^4$ \& Noah D. Goodman$^3$}\medskip\\ 
 $^1$Department of Physics and Center for Brain Science, Harvard University\\
-$^2$Department of Psychology, Stanford University\\
-$^3$Department of Psychology and Center for Brain Science, Harvard University\\
-$^4$Department of Computer Science, Harvard University
+$^2$Department of Computer Science, Harvard University\\
+$^3$Department of Psychology, Stanford University\\
+$^4$Department of Psychology and Center for Brain Science, Harvard University
 }
 
 
@@ -56,7 +56,7 @@ Sentence embeddings; compositionality; test data sets
 
 
 \section{Introduction and Motivation}
-In the world of deep learning, statistical structure is extracted by training on very large datasets. Several of these models are in theory Turing complete, leaving the discovery of the right parameters mostly to the training data and partially also to the training protocols. The training datasets are assumed to be samples from the natural distribution. While it remains an interesting question as to whether these training data sets truly are sampling the true distribution we want to approximate, another question is of how many random samples from the true distribution are enough to sufficiently constrain the space of models (in the huge space of possibilities the thousands of parameters in a neural network model allow) that explain the training data. Heuristics literature shows that simple strategies often satisfactorily explain the bulk of the variance amongst the most likely scenarios.
+In the world of deep learning, statistical structure is extracted by training on very large datasets. Several of these models are in theory Turing complete, leaving the discovery of the right parameters mostly to the training data and training protocols. The training datasets are assumed to be samples from the natural distribution. While it remains an interesting question as to whether these training data sets truly are sampling the true distribution we want to approximate, another question is of how many random samples from the true distribution are enough to sufficiently constrain the space of models (in the huge space of possibilities the thousands of parameters in a neural network model allow) that explain the training data. Heuristics literature shows that simple strategies often satisfactorily explain the bulk of the variance amongst the most likely scenarios.
 
 \textbf{discussion on heuristics literature}
 
@@ -64,11 +64,11 @@ Perhaps a better strategy for generating training data is to sample the cases th
 
 \textbf{discussion on ``teaching data sets"}
 
-It is not a new proposal that one should focus on the boundaries when trying to learn structures, this has parallels to research on adversarial training. However, in the realms of very structured compositional domains like language, perhaps it is unrealistic to generate good adversarial examples that are valid. Enter the field of cognitive psychology and psycholinguistics where people have been coming up with good edge cases to test human understanding of these domains for decades. 
+It is not a new proposal that one should focus on the boundaries when trying to learn structures, this has parallels to research on adversarial training. However, in the realms of very structured compositional domains like language, perhaps it is unrealistic to successfully train a generator of good adversarial examples (like GANs) from training data alone. 
 
-\textbf{discussion on what cogsci can offer / why adversarial training as it stands isn't there yet}
+\textbf{discussion on what cogsci can offer as more hypothesis driven / why adversarial training as it stands isn't there yet}
 
-The disproportionate sampling of tails of the true distribution, and the contrived cases that live there, is unlikely to occur in a natural environment. Perhaps kids are given some extra exposure to common pitfalls etc and what to avoid during schooling and other pedagogy, but it is disheartening to believe that structures cannot be learned from passive observation of natural statistics. However, generative learners are less sensitive to variations in the distributions of observed data and make better use of implicit negative evidence. So perhaps this kind of hand-holding is not necessary for more generative models.
+%The disproportionate sampling of tails of the true distribution, and the contrived cases that live there, is unlikely to occur in a natural environment. Perhaps kids are given some extra exposure to common pitfalls etc and what to avoid during schooling and other pedagogy, but it is disheartening to believe that structures cannot be learned from passive observation of natural statistics. However, generative learners are less sensitive to variations in the distributions of observed data and make better use of implicit negative evidence. So perhaps this kind of hand-holding is not necessary for more generative models.
 
 
 \section{Sentence Encoding}
@@ -576,36 +576,15 @@ Second, in cases where even the words across the pairs are the same, we see that
 
 Finally, we see that there are some other cases in which InferSent performs above $50\%$, indicating that it is picking up some information about the relative positions of the words, although clearly not enough to perform competitively on these compositional tasks. Further work is needed to better isolate exactly what is learned, but is beyond the scope of this work.
 
+\section{Discussion}
+
 This work demonstrates the inadequacy of most datasets available today in truly testing if compositional structure, i.e. structure beyond lexical structure, is being picked up by NLP models. InferSent achieves very high performance on the test set of the SNLI dataset, \textit{as well as several other tasks}, but fails on our dataset. Our ScrambleTest dataset is available online to test future models on. This work highlights the value of crafting diagnostic datasets, in the spirit of tasks designed in in cognitive psychology, in better understanding the behavior of these complex models. Our results on augmented training also show promise for systematic training sets... xyz.
 % @Demi: todo, fill in trained network results
-
-%Some of the sub-types, particularly comparisons, adjective-referent binding, and subject-verb binding have enough sentence pairs to be able to consider including some of them during training to augment the classifier. We leave this to future work.
 
 \section{Future Directions}
 
 This is one step towards building better diagnostic test sets to score NLI models like InferSent. Other interesting things to try would be to see how other models, particularly generative models like SkipThought, differ on these metrics. Further, we could use more sophisticated methods like LIME (Local Interpretable Model-Agnostic Explanations, \cite{ribeiro2016should}) to generate interpretable explanations for its classifications and understand the performance of these models on diagnostic datasets. 
 
-
-
-%\begin{itemize}
-%\item How much info do the sentence representations actually have?
-%\begin{itemize}
-%\item BOW: How much is lost due to averaging, and to what extent is it possible to back out the words? Include `product of all word reps' and other (?) operations that are symmetric to word position to improve info transfer about words in the sentence as a \textbf{fairer BOW baseline comparison}.
-%\item InferSent: Could a decoder recreate the sentence from the last hidden state of an RNN? 
-%\end{itemize}
-%\item Are the ScrambleTests examples just too different from SNLI to make a fair comparison?
-%\begin{itemize}
-%\item Train on part of the ScrambleTest data, ensuring no overfitting and retest.
-%\item Ensure that distributional characteristics (base rates of words for eg, and other statistics) are comparable to SNLI.
-%\end{itemize}
-%\item What are the differences between the results from LogReg and MLP?
-%\item Test other sentence representations 
-%\item Find more precisely:
-%\begin{itemize}
-%\item Description of incremental compositional information needed and how different types of scrambled data sets provide a paving.
-%\item What exactly InferSent classifies based on (LIME?). But perhaps that's getting too invested in InferSent in particular.
-%\end{itemize} 
-%\end{itemize}
 
 \bibliographystyle{apa-good}
 \bibliography{library}
