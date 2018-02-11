@@ -2,7 +2,8 @@
 Codebase for Dasgupta et al. 2018, submission to CogSci.
 
 Code to generate Compositional dataset based on comparisons, SNLI data analysis and scripts for augmented training is in the training-exepriments branch.
-Code in main branch sets up classifiers, downloads data etc.
+
+Code in main branch generates a smaller but more general composotional dataset, sets up classifiers, downloads and tokenizes data.
 
 ## Instructions ##
 ### Getting data ###
