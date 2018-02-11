@@ -1,7 +1,8 @@
-# ScrambleTests
-Codebase to 
-1. Train classifiers on pairs of InferSent embedded sentences to predict NLI labels
-2. Test its performance on a new Scrambled dataset
+# Evaluating compositionality in sentence embeddings
+Codebase for Dasgupta et al. 2018, submission to CogSci.
+
+Code to generate Compositional dataset based on comparisons, SNLI data analysis and scripts for augmented training is in the training-exepriments branch.
+Code in main branch sets up classifiers, downloads data etc.
 
 ## Instructions ##
 ### Getting data ###
