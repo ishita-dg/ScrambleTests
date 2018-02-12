@@ -100,7 +100,7 @@ def merge_groups(groups):
     return merged_group
 
 
-def load_scramble_task(path, label2id, task):
+def load_scramble_task(path, label2id, task, one_group=False):
     """
     Return data group for a single scramble task. Not sorted yet.
     """
@@ -113,7 +113,8 @@ def load_scramble_task(path, label2id, task):
     
     with open(s1_path) as s1_file, open(s2_path) as s2_file, open(label_path) as label_file:
          for i, (s1, s2, label) in enumerate(zip(s1_file, s2_file, label_file)):
-             dataset = scramble_group[dataset_types[i % 3]]
+             group_type = dataset_types[i % 3] if not one_group else "train"
+             dataset = scramble_group[group_type]
              dataset['X_A'].append(s1.strip())
              dataset['X_B'].append(s2.strip())
              dataset['y'].append(int(label.strip()))
@@ -121,7 +122,7 @@ def load_scramble_task(path, label2id, task):
     return scramble_group
 
 
-def load_scramble_all(path, label2id, tasks):
+def load_scramble_all(path, label2id, tasks, one_group=False):
     """
     Load all scramble data groups merged together as a single group, sorted to reduce padding.
     """
@@ -129,7 +130,8 @@ def load_scramble_all(path, label2id, tasks):
     for task in tasks:
         groups.append(load_scramble_task(path, label2id, task))
     big_group = merge_groups(groups)
+    if one_group:
+        return big_group["train"]
     sorted_group = sort_group(big_group)
     return sorted_group
-
 
