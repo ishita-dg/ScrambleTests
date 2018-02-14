@@ -1,5 +1,5 @@
 # Evaluating compositionality in sentence embeddings
-Codebase for Dasgupta et al. 2018, submission to CogSci.
+Codebase for Dasgupta et al. 2018, https://arxiv.org/abs/1802.04302
 
 Code to generate Compositional dataset based on comparisons, SNLI data analysis and scripts for augmented training is in the training-exepriments branch.
 
