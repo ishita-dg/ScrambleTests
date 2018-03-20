@@ -8,6 +8,7 @@
 import os
 import numpy as np
 import torch
+from IPython import embed
 
 
 def get_batch(batch, word_vec):
@@ -36,7 +37,7 @@ def get_word_dict(sentences):
     return word_dict
 
 
-def get_glove(word_dict, glove_path):
+def get_glove(word_dict, glove_path, rand_path=""):
     # create word_vec with glove vectors
     word_vec = {}
     with open(glove_path) as f:
@@ -44,14 +45,21 @@ def get_glove(word_dict, glove_path):
             word, vec = line.split(' ', 1)
             if word in word_dict:
                 word_vec[word] = np.array(list(map(float, vec.split())))
+    if rand_path != "":
+        with open(rand_path) as f:
+            for line in f:
+                word, vec = line.split(' ', 1)
+                assert word not in word_vec
+                word_vec[word] = np.array(list(map(float, vec.split())))
+
     print('Found {0}(/{1}) words with glove vectors'.format(
                 len(word_vec), len(word_dict)))
     return word_vec
 
 
-def build_vocab(sentences, glove_path):
+def build_vocab(sentences, glove_path, rand_path=""):
     word_dict = get_word_dict(sentences)
-    word_vec = get_glove(word_dict, glove_path)
+    word_vec = get_glove(word_dict, glove_path, rand_path)
     print('Vocab size : {0}'.format(len(word_vec)))
     return word_vec
 
