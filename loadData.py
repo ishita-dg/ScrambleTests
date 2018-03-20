@@ -18,6 +18,8 @@ A *data group* is of the form {
 import numpy as np
 import os
 
+from IPython import embed
+
 
 def load_lines(path):
     out = []
@@ -118,7 +120,7 @@ def load_scramble_task(path, label2id, task, one_group=False):
              dataset['X_A'].append(s1.strip())
              dataset['X_B'].append(s2.strip())
              dataset['y'].append(int(label.strip()))
-
+    #embed()
     return scramble_group
 
 
@@ -128,9 +130,11 @@ def load_scramble_all(path, label2id, tasks, one_group=False):
     """
     groups = []
     for task in tasks:
-        groups.append(load_scramble_task(path, label2id, task))
+        groups.append(load_scramble_task(path, label2id, task, one_group))
     big_group = merge_groups(groups)
     if one_group:
+        print("load scramble all")
+        #embed()
         return big_group["train"]
     sorted_group = sort_group(big_group)
     return sorted_group
