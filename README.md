@@ -3,6 +3,8 @@ Codebase for Dasgupta et al. 2018, https://arxiv.org/abs/1802.04302
 
 Code to generate Compositional dataset based on comparisons, SNLI data analysis and scripts for augmented training is in the training-exepriments branch.
 
+Dataset used in the paper is here: https://github.com/ishita-dg/ScrambleTests/tree/training-experiment/testData/new
+
 Code in main branch generates a smaller but more general composotional dataset, sets up classifiers, downloads and tokenizes data.
 
 ## Instructions ##
