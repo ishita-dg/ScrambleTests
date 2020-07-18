@@ -8,9 +8,10 @@ Code to generate Compositional dataset based on comparisons, SNLI data analysis 
 
 Dataset used in the paper is here: https://github.com/ishita-dg/ScrambleTests/tree/training-experiment/testData/new
 
-Code in main branch generates a smaller but more general composotional dataset, sets up classifiers, downloads and tokenizes data.
+Code in main branch generates a smaller but more general dataset, sets up classifiers, downloads and tokenizes data.
 
 ## Instructions ##
+
 ### Getting data ###
 In the Downloads folder, run:
 `./get_data.bash`
