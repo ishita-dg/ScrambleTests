@@ -4,7 +4,7 @@ Codebase for Dasgupta et al. 2018, https://arxiv.org/abs/1802.04302
 An updated version of this work is Dasgupta, Ishita, et al. "Analyzing machine-learned representations: A natural language case study." arXiv preprint arXiv:1909.05885 (2019).
 Linked here: https://arxiv.org/abs/1909.05885
 
-Code to generate Compositional dataset based on comparisons, SNLI data analysis and scripts for augmented training is in the training-exepriments branch.
+Code to generate Compositional dataset based on comparisons, SNLI data analysis and scripts for augmented training is in the training-experiments branch.
 
 Dataset used in the paper is here: https://github.com/ishita-dg/ScrambleTests/tree/training-experiment/testData/new
 
